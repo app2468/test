@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ssm.mapper.EmployeeMapper">
+    <!-- 查询所有员工和部门信息-->
+    <select id="getAllEmps" resultMap="myEmpAndDept">
+        select e.id eid, e.last_name,e.email,e.gender, d.id did, d.dept_name
+		from tbl_employee e ,tbl_dept d
+		where e.d_id = d.id
+
+    </select>
+
+    <resultMap type="ssm.beans.Employee" id="myEmpAndDept">
+        <id column="eid" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="email" property="email"/>
+        <result column="gender" property="gender"/>
+        <association property="dept" javaType="ssm.beans.Department">
+            <id column="did" property="id"/>
+            <result column="dept_name"  property="departmentName"/>
+        </association>
+    </resultMap>
+
+    <!-- 添加员工和部门信息-->
+    <insert id="save" parameterType="ssm.beans.Employee">
+        insert into tbl_employee (last_name,gender,email,d_id) values(#{lastName},#{gender},#{email},#{d_id});
+    </insert>
+
+    <!-- 删除员工-->
+    <delete id="delete">
+        delete from tbl_employee where id=#{id};
+    </delete>
+
+    <!-- 根据id查询员工和部门信息-->
+<!--    <select id="getInfoById" parameterType="ssm.beans.Employee" resultType="ssm.beans.Employee">-->
+<!--       select e.id eid, e.last_name,e.email,e.gender, d.id did, d.dept_name-->
+<!--		from tbl_employee e ,tbl_dept d-->
+<!--		where e.d_id = d.id-->
+<!--    </select>-->
+
+    <select id="getInfoById" resultMap="EmpAndDept">
+        select e.id eid ,e.last_name, e.gender,e.email,e.d_id,
+        d.id did,d.dept_name from tbl_dept d,tbl_employee e
+        where e.d_id=d.id and e.id=#{id};
+    </select>
+
+    <resultMap id="EmpAndDept" type="ssm.beans.Employee">
+        <id column="eid" property="id"></id>
+        <result column="last_name" property="lastName"></result>
+        <result column="email" property="email"></result>
+        <result column="gender" property="gender"></result>
+        <result column="d_id" property="d_id"></result>
+        <association property="dept" javaType="ssm.beans.Department">
+            <id column="did" property="id"></id>
+            <result column="dept_name" property="departmentName"></result>
+        </association>
+    </resultMap>
+
+    <!-- 更新员工-->
+<!--    <update id="update" parameterType="ssm.beans.Employee">-->
+<!--        update  tbl_employee set-->
+<!--             last_name=#{lastName},-->
+<!--             email=#{email},-->
+<!--             gender=#{gender},-->
+<!--             d_id=#{d_id}-->
+<!--             where id =#{id};-->
+<!--    </update>-->
+
+    <update id="update" parameterType="ssm.beans.Employee">
+        update tbl_employee
+        <set>
+            <if test="lastName!=null &amp;&amp; lastName!=&quot;&quot;">
+                last_name = #{lastName},
+            </if>
+            <if test="email!=null and email.trim()!=''">
+                email = #{email} ,
+            </if>
+            <if test="gender==0 or gender==1">
+                gender=#{gender},
+            </if>
+            <if test="d_id!=null">
+                d_id=#{d_id}
+            </if>
+        </set>
+        where id =#{id}
+    </update>
+</mapper>
